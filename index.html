@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Combined Maths | Ancient Legends</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --gold: #d4af37;
+            --card-new-bg: rgba(244, 239, 230, 0.95);
+            --card-old-bg: rgba(42, 36, 28, 0.9);
+            --footer-text: #1e3a8a;
+            --footer-link: #d97706;
+        }
+
+        /* --- LAYOUT & THEME --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 1.5s ease;
+            color: #1c1a17;
+        }
+        body.is-day { 
+            background: linear-gradient(to bottom, #2980b9, #6dd5fa, #ffffff); 
+            --footer-text: #1e3a8a; 
+            --footer-link: #d97706;
+        }
+        body.is-night { 
+            background: linear-gradient(to bottom, #000000, #02010a, #0f172a); 
+            color: #f5f0e6; 
+            --card-new-bg: rgba(30, 30, 30, 0.95);
+            --footer-text: #94a3b8; 
+            --footer-link: #facc15;
+        }
+
+        h1, h2, h3, .greek-font { font-family: 'Cinzel', serif; }
+
+        /* --- SKY ANIMATION --- */
+        .sky-layer { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+        .star { position: absolute; background: white; border-radius: 50%; opacity: 0; animation: twinkle var(--d) infinite; }
+        .cloud { position: absolute; background: white; border-radius: 100px; filter: blur(25px); opacity: 0; animation: cloudMove var(--d) infinite linear; }
+        
+        body.is-night .star { opacity: 0.9; }
+        body.is-day .cloud { opacity: 0.6; }
+
+        @keyframes twinkle { 50% { opacity: 0.3; transform: scale(0.5); } }
+        @keyframes cloudMove { from { transform: translateX(-50vw); } to { transform: translateX(100vw); } }
+
+        /* --- ANCIENT BOARD --- */
+        .ancient-board {
+            position: relative; background: rgba(255,255,255,0.1); backdrop-filter: blur(12px);
+            border: 2px solid var(--gold); border-radius: 20px; padding: 2rem;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3); overflow: hidden;
+        }
+        .ancient-board::before {
+            content: ""; position: absolute; inset: 0; opacity: 0.5; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v18h-2v-2h2v-2h-2v-2h2v-2h-2v-2h2v-2h-2v-2H0v-2z' fill='%23c9b27c' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        .firefly {
+            position: absolute; width: 4px; height: 4px; background: #ffae00; border-radius: 50%;
+            box-shadow: 0 0 10px 2px #ffae00; opacity: 0;
+            animation: fly 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        body.is-night .firefly { opacity: 1; }
+        @keyframes fly { 0% { transform: translate(0,0); } 100% { transform: translate(var(--x), var(--y)); } }
+
+        /* --- CARD STYLES --- */
+        .lesson-card {
+            position: relative; padding: 1.5rem; border-radius: 12px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            display: flex; flex-direction: column; min-height: 280px;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Hover Lift */
+        .lesson-card:hover {
+            transform: translateY(-12px) scale(1.02) !important;
+            z-index: 50;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
+        }
+
+        /* Glow Animation */
+        @keyframes highlight-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); transform: scale(1); }
+            50% { box-shadow: 0 0 40px 10px rgba(255, 215, 0, 0.5); transform: scale(1.05); border-color: #fff; }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); transform: scale(1); }
+        }
+        .highlight-active { animation: highlight-pulse 2s ease-in-out; z-index: 100 !important; }
+
+        /* States */
+        .card-new {
+            background: var(--card-new-bg); border: 3px solid var(--gold);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            animation: floatCard 4s ease-in-out infinite;
+        }
+        .card-new::after {
+            content: "✨ NEW QUEST"; position: absolute; top: -12px; right: 20px;
+            background: var(--gold); color: #000; font-weight: 900;
+            font-size: 0.7rem; padding: 4px 12px; border-radius: 99px;
+            animation: pulseText 2s infinite;
+        }
+
+        .card-progress {
+            background: linear-gradient(135deg, #e3dac9, #d4c5b0);
+            border: 3px solid #8d7b68; color: #3e3221;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3); transform: rotate(-1deg); 
+        }
+        .card-progress::before {
+            content: "⏳ JOURNEY STARTED"; position: absolute; top: 10px; right: 10px;
+            font-size: 0.65rem; font-weight: bold; opacity: 0.6;
+        }
+
+        .card-done {
+            background: url('https://www.transparenttextures.com/patterns/cracked-concrete.png'), #9ca3af;
+            background-blend-mode: multiply; border: 3px dashed #6b7280;
+            opacity: 0.7; transform: scale(0.95) rotate(1deg); filter: grayscale(0.8);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+        .card-done:hover { filter: grayscale(0); opacity: 1; transform: scale(1) rotate(0deg) !important; }
+        .card-done h3 { text-decoration: line-through; color: #333; }
+        
+        .win-icon {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 4rem; opacity: 0.3; pointer-events: none; border: 4px solid #ef4444; color: #ef4444;
+            border-radius: 50%; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center;
+            animation: popIn 0.5s;
+        }
+        .state-complete .victory-icon { display: block; }
+
+        /* --- BUTTONS & TAGS --- */
+        .magic-btn {
+            position: relative; width: 100%; padding: 12px 20px; border-radius: 8px; border: none;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cinzel', serif; font-weight: 700; color: white; text-transform: uppercase;
+            text-decoration: none; transition: transform 0.1s;
+            border-bottom: 5px solid rgba(0,0,0,0.3); margin-bottom: 8px; overflow: hidden;
+        }
+        .magic-btn:active { transform: translateY(4px); border-bottom: none; margin-bottom: 13px; }
+
+        .btn-start { background: linear-gradient(to right, #facc15, #eab308); color: black; }
+        .btn-continue { background: linear-gradient(to right, #3b82f6, #2563eb); color: white; }
+        .btn-replay { background: linear-gradient(to right, #78716c, #57534e); color: #d6d3d1; }
+        .btn-pdf { background: linear-gradient(to right, #f97316, #ea580c); color: white; }
+
+        .btn-icon-3d { font-size: 1.2rem; margin-right: 8px; transition: 0.3s; }
+        .magic-btn:hover .btn-icon-3d { transform: scale(1.4) rotate(10deg); }
+
+        .tag { font-size: 0.6rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid; }
+        .tag-revision { background: rgba(59, 130, 246, 0.15); color: #2563eb; border-color: #3b82f6; }
+        .tag-ipad { background: rgba(168, 85, 247, 0.15); color: #9333ea; border-color: #a855f7; }
+        .is-night .tag-revision { color: #60a5fa; }
+        .is-night .tag-ipad { color: #c084fc; }
+
+        .vid-divider { border: 0; border-top: 1px dashed rgba(0,0,0,0.1); margin: 10px 0; }
+        .is-night .vid-divider { border-top-color: rgba(255,255,255,0.1); }
+
+        /* Animations & Utils */
+        @keyframes floatCard { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes pulseText { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes blink-orange { 50% { opacity: 0.5; color: #fbbf24; } }
+        @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); } 100% { transform: translate(-50%, -50%) scale(1); } }
+        .blink-orange { animation: blink-orange 1.5s infinite; color: #fbbf24; }
+
+        .quest-scroll::-webkit-scrollbar { width: 6px; }
+        .quest-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        .quest-scroll::-webkit-scrollbar-thumb { background: #c9b27c; border-radius: 10px; }
+
+        /* Scroll Top */
+        #scroll-top {
+            position: fixed; bottom: 20px; right: 20px; background: #FFD700; color: black;
+            width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); cursor: pointer; opacity: 0; pointer-events: none; transition: 0.3s;
+            z-index: 100; border: 2px solid #fff;
+        }
+        #scroll-top.visible { opacity: 1; pointer-events: auto; }
+        #scroll-top:hover { transform: translateY(-5px); }
+
+        /* Footer */
+        .footer-text { color: var(--footer-text); transition: color 1.5s; }
+        .footer-link { color: var(--footer-link); transition: color 1.5s; }
+        .footer-link:hover { filter: brightness(1.2); }
+
+    </style>
+</head>
+<body class="is-night">
+
+    <div id="scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">⬆</div>
+    <div class="sky-layer" id="sky-container"></div>
+
+    <div class="relative z-10 max-w-6xl mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-12">
+            <h2 class="text-xl md:text-3xl font-bold tracking-widest uppercase opacity-80 ancient-font mb-2">
+                <span id="greeting">Welcome</span> <span id="time-emoji">✨</span>
+            </h2>
+            <h1 class="text-4xl md:text-6xl font-black ancient-font text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-100 to-yellow-500 drop-shadow-2xl">
+                LEGENDS OF MATHS
+            </h1>
+            <p class="text-sm mt-2 opacity-70">Batch 2026 | Teacher: Vikum Harshana</p>
+        </header>
+
+        <div class="ancient-board mb-16">
+            <div class="firefly" style="top:10%; left:10%; --x:20px; --y:-20px;"></div>
+            <div class="firefly" style="top:50%; right:20%; --x:-30px; --y:40px;"></div>
+            <div class="firefly" style="top:80%; left:40%; --x:10px; --y:30px;"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                <div class="md:col-span-2 text-yellow-100">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-3xl">📜</span>
+                        <h2 class="text-2xl font-bold ancient-font text-yellow-400">Royal Decree</h2>
+                    </div>
+                    <p class="mb-4 leading-relaxed font-serif text-lg">
+                        "Those who master the art of numbers shall conquer the A/L Examination. 
+                        Do not let missed live sessions halt your progress."
+                    </p>
+                    <div class="flex gap-4 mt-6">
+                        <button onclick="toggleTheme()" class="border border-yellow-500 text-yellow-400 px-4 py-2 rounded-lg hover:bg-yellow-500/20 transition font-bold uppercase text-xs tracking-widest">
+                            🌗 Toggle Realm
+                        </button>
+                        <button onclick="resetAll()" class="border border-red-500 text-red-400 px-4 py-2 rounded-lg hover:bg-red-500/20 transition font-bold uppercase text-xs tracking-widest">
+                            ⚡ Reset Destiny
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-black/40 rounded-lg p-4 border border-white/10 h-56 overflow-y-auto quest-scroll">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-white/50 mb-3 sticky top-0 bg-black/80 p-2 backdrop-blur-sm z-10 border-b border-white/10">Quest Log</h3>
+                    <div id="summary-list" class="space-y-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">
+            </div>
+
+        <footer class="text-center mt-16 mb-8 ancient-font tracking-widest">
+            <p class="text-sm opacity-70 footer-text">වැඩිදුර තොරතුරු සදහා</p>
+            <a href="https://t.me/CMvikum26" target="_blank" class="inline-block mt-2 footer-link transition">
+                Join Telegram Channel 💬
+            </a>
+            <div class="mt-4 text-2xl animate-bounce">🏛️</div>
+        </footer>
+
+    </div>
+
+    <script>
+        // =========================================================================
+        // 🛠️ INSTRUCTIONS FOR ADDING NEW LESSONS (අලුත් පාඩම් එකතු කරන ආකාරය)
+        // =========================================================================
+        // 1. පහත 'lessonData' ලැයිස්තුව සොයාගන්න (Find the 'lessonData' list below).
+        // 2. එහි ඉහළින්ම අලුත් කොටසක් '{ ... }' පහත ආකෘතියට අනුව එකතු කරන්න (Add new block at the TOP).
+        // 
+        // ආකෘතිය (Format):
+        // {
+        //    id: "lesson_13",  <-- 1. අලුත් අංකයක් දෙන්න (Give unique ID)
+        //    topic: "New Lesson Name", <-- 2. පාඩමේ නම සිංහලෙන් (Lesson Name in Sinhala)
+        //    pdf: "Link", <-- 3. PDF ලින්ක් එක (නැත්නම් "" තබන්න)
+        //    videos: [
+        //       { title: "Revision Theory", type: "Revision", url: "Youtube Link" },
+        //       { title: "Tutorial", type: "iPad", url: "Youtube Link" }
+        //    ]
+        // },
+        // =========================================================================
+
+        const lessonData = [
+            /* 👇 PASTE NEW LESSON HERE (අලුත් පාඩම මෙතැනට) 👇 */
+         /* {
+                id: "lesson_12", 
+                topic: "අවකලනය", 
+                pdf: "https://drive.google.com/drive/folders/1RiEg3VYivUs9ICdKsHWiZTCEIbgJoFE_?usp=drive_link",
+                videos: [ 
+                    { title: "Part 01", type: "Revision", url: "https://www.blank.org" },
+                    { title: "Part 02", type: "Revision", url: "https://youtu.be/iKhvR0swIkk" },
+                    { title: "Tutorial Discussion", type: "iPad", url: "https://www.blank.org" }
+                ]
+            },*/
+            /* ------------------------------------------------ */
+	  
+            {
+                id: "lesson_03", topic: "බල ඝුර්ණය",
+                pdf: "https://drive.google.com/drive/folders/1FGFSHSK6vj01ApfaLgqF5GhXTUZMavaO?usp=drive_link",
+                videos: [ { title: "Full Lesson", type: "Revision", url: "https://youtu.be/4l-R_AuColk" } ]
+            },
+            {
+                id: "lesson_04", topic: "දෘඪ වස්තුවක් මත බල සමතුලිතතාවය",
+                pdf: "https://drive.google.com/drive/folders/1fO_8zkG93ZyNXAE0MlvW_F4kA7CDVp-t?usp=drive_link",
+                videos: [ { title: "Full Lesson", type: "Revision", url: "https://youtu.be/cGy2hxG8AHg" } ]
+            },
+            {
+                id: "lesson_02", topic: "අංශුවක් මත බල සමතුලිතතාවය",
+                pdf: "https://drive.google.com/drive/folders/1LzolrD7Aj0IbZuDqrxwwjSVM2AZb3Q4T?usp=drive_link",
+                videos: [ { title: "Full Lesson", type: "Revision", url: "https://youtu.be/f3Oef8UBB-U" } ]
+            },
+         /* {
+                id: "lesson_15", topic: "ගණිත අභ්‍යුහන මූලධර්මය",
+                pdf: "https://drive.google.com/drive/folders/1C9EHyKIpqUOZiAzrO_0vNLOfhCAZUQpU?usp=drive_link",
+                videos: [ 
+			{ title: "Full Lesson", type: "Revision", url: "https://www.blank.org" },
+		 	{ title: "Tutorial Discussion", type: "iPad", url: "https://www.blank.org" }
+			]	
+            }, */
+            {
+                id: "lesson_14", topic: "ප්‍රක්ෂිප්ත",
+                pdf: "https://drive.google.com/drive/folders/1wmqjX83b4k7QiWs3-Z5ETDfPwX5_jf-L?usp=drive_link",
+                videos: [ 
+			{ title: "Full Lesson", type: "Revision", url: "https://youtu.be/qDkrrFwwzB0" },
+		 	{ title: "Tutorial Discussion", type: "iPad", url: "https://www.blank.org" }
+			]	
+            },
+	 /* {
+                id: "lesson_13", topic: "චලිත ප්‍රස්තාර",
+                pdf: "https://drive.google.com/drive/folders/1eLyxwu_z5us3OwKtOOMUpt6npqE3gCu-?usp=sharing",
+                videos: [ 
+			{ title: "Full Lesson", type: "Revision", url: "https://www.blank.org" },
+		 	{ title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/mmlgaJPl7RM" }
+			]	
+            }, */
+            {
+                id: "lesson_01", topic: "ගෝල ගැටුම්",
+                pdf: "https://drive.google.com/drive/folders/1mhWZPPLYHMHJqJvjtpaKSirj3oupcYEm?usp=drive_link",
+                videos: [ 
+			{ title: "Full Lesson", type: "Revision", url: "https://youtu.be/u3FscvA7NiI" },
+		 	{ title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/SVEFqAXORA4" }
+			]	
+            },
+            {
+                id: "lesson_11", topic: "මාපාංක අසමානතා",
+                pdf: "https://drive.google.com/drive/folders/1I7BbXTPOkvbDUONikefWsl9dXrBmJMn8?usp=sharing",
+                videos: [
+                    { title: "Part 01", type: "Revision", url: "https://youtu.be/ptU4JEnWxDY" },
+                    { title: "Part 02", type: "Revision", url: "https://youtu.be/Ll-vnupCORQ" },
+                    { title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/JIeldjK0JcI" }
+                ]
+            },
+            {
+                id: "lesson_08", topic: "ද්වි පද ප්‍රසාරණය",
+                pdf: "https://drive.google.com/drive/folders/1c67TNqvP0xbOvU7cmTuZPWR5ZvtBYdj5?usp=sharing",
+                videos: [
+                    { title: "Part 01", type: "Revision", url: "https://youtu.be/6oFQ-DpHWN4" },
+                    { title: "Part 02", type: "Revision", url: "https://youtu.be/IOOjGAn3mKo" },
+                    { title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/IgQPCP1bmSs" }
+                ]
+            },
+            {
+                id: "lesson_05", topic: "සීමාව",
+                pdf: "https://drive.google.com/drive/folders/1ugNx67Wgtczgfc6QiWY9EV-isPckL5hw?usp=sharing",
+                videos: [
+                    { title: "Theory Revision", type: "Revision", url: "https://youtu.be/BUsmWoR_W9s" },
+                    { title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/Xxjkf9wxR5Y" }
+                ]
+            }
+        ];
+
+        // --- APP LOGIC ---
+        const grid = document.getElementById('grid-container');
+        const summaryList = document.getElementById('summary-list');
+        let watched = JSON.parse(localStorage.getItem('math_legends_v2')) || [];
+        let isNight = localStorage.getItem('theme_preference') !== 'day';
+
+        function init() {
+            renderSky();
+            checkTime();
+            setInterval(checkTime, 60000);
+            renderWorld();
+            
+            window.addEventListener('scroll', () => {
+                const btn = document.getElementById('scroll-top');
+                if(window.scrollY > 300) btn.classList.add('visible');
+                else btn.classList.remove('visible');
+            });
+        }
+
+        // --- CLICK & GLOW LOGIC ---
+        function highlightCard(id) {
+            const card = document.getElementById(id);
+            if(card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.classList.remove('highlight-active');
+                void card.offsetWidth; // Trigger reflow
+                card.classList.add('highlight-active');
+                setTimeout(() => { card.classList.remove('highlight-active'); }, 2000);
+            }
+        }
+
+        function renderWorld() {
+            grid.innerHTML = '';
+            summaryList.innerHTML = '';
+
+            lessonData.forEach(lesson => {
+                let totalVids = lesson.videos.length;
+                let watchedCount = 0;
+                lesson.videos.forEach((v, i) => {
+                    if (watched.includes(`${lesson.id}_${i}`)) watchedCount++;
+                });
+
+                let percent = totalVids === 0 ? 0 : Math.round((watchedCount / totalVids) * 100);
+                
+                let status = 'new';
+                if (watchedCount > 0 && watchedCount < totalVids) status = 'progress';
+                if (watchedCount === totalVids && totalVids > 0) status = 'done';
+
+                const card = document.createElement('div');
+                card.id = lesson.id;
+                
+                if (status === 'new') card.className = "lesson-card card-new";
+                else if (status === 'progress') card.className = "lesson-card card-progress";
+                else card.className = "lesson-card card-done";
+
+                let content = `
+                    <div class="mb-2">
+                        <h3 class="text-xl font-bold leading-tight">${lesson.topic}</h3>
+                        <p class="text-xs uppercase font-bold tracking-widest mt-1 opacity-70">
+                            ${status === 'done' ? 'Completed' : status === 'progress' ? 'In Progress' : 'New'}
+                        </p>
+                    </div>
+
+                    <div class="progress-container mb-6 w-full bg-black/20 h-2 rounded-full overflow-hidden border border-white/10">
+                        <div class="progress-bar bg-yellow-400 h-full transition-all duration-700 ease-out" style="width: ${percent}%"></div>
+                    </div>
+                `;
+
+                if (status === 'done') content += `<div class="win-icon">🏆</div>`;
+
+                content += `<div class="mt-auto flex flex-col relative z-10">`;
+
+                let lastType = "";
+                lesson.videos.forEach((vid, idx) => {
+                    const vidKey = `${lesson.id}_${idx}`;
+                    const isVidWatched = watched.includes(vidKey);
+                    
+                    if(lastType !== "" && lastType !== vid.type) {
+                        content += `<hr class="vid-divider">`;
+                    }
+                    lastType = vid.type;
+
+                    let btnStyle = isVidWatched ? 'btn-replay' : (status === 'new' ? 'btn-start' : 'btn-continue');
+                    let icon = isVidWatched ? '↺' : '⚔️';
+                    let text = isVidWatched ? 'Relive Memory' : 'Start Quest';
+                    if (vid.type === 'iPad') { icon = '✏️'; text = isVidWatched ? 'Review session' : 'Open iPad session'; }
+
+                    let tagClass = vid.type === 'iPad' ? 'tag-ipad' : 'tag-revision';
+
+                    content += `
+                        <div class="flex items-center mt-2 mb-1 pl-1">
+                            <span class="tag ${tagClass}">${vid.type}</span>
+                            <span class="text-xs opacity-80 truncate font-mono tracking-wide ml-2">${vid.title}</span>
+                        </div>
+                        <a href="${vid.url}" target="_blank" onclick="markWatched('${vidKey}')" class="magic-btn ${btnStyle}">
+                           <span class="btn-icon-3d">${icon}</span>
+                           <span>${text}</span>
+                        </a>`;
+                });
+
+                if (lesson.pdf) {
+                    content += `
+                        <div class="h-2"></div>
+                        <a href="${lesson.pdf}" target="_blank" class="magic-btn btn-pdf">
+                           <span class="btn-icon-3d">📜</span>
+                           <span>Ancient Scrolls (PDF)</span>
+                        </a>`;
+                }
+
+                content += `</div>`;
+                card.innerHTML = content;
+                grid.appendChild(card);
+
+                // --- QUEST LOG ---
+                const row = document.createElement('div');
+                row.className = "p-3 border-b border-white/10 cursor-pointer hover:bg-white/10 flex justify-between items-center transition group rounded-lg";
+                row.onclick = () => highlightCard(lesson.id);
+
+                let nameClass = "text-sm font-medium transition-colors ";
+                let ratioClass = "text-xs font-bold font-mono px-2 py-1 rounded ";
+                let ratioText = `${watchedCount}/${totalVids}`;
+
+                if (status === 'new') {
+                    nameClass += "text-white";
+                    ratioClass += "text-green-400 bg-green-900/30 border border-green-500/30"; 
+                } else if (status === 'progress') {
+                    nameClass += "blink-orange"; 
+                    ratioClass += "text-yellow-500 bg-yellow-900/30 border border-yellow-500/30";
+                } else {
+                    nameClass += "text-red-400 line-through decoration-red-500/50 opacity-60";
+                    ratioClass += "text-red-400 bg-red-900/30 border border-red-500/30";
+                }
+
+                row.innerHTML = `
+                    <span class="${nameClass}">${lesson.topic}</span>
+                    <span class="${ratioClass}">${ratioText}</span>
+                `;
+                summaryList.appendChild(row);
+            });
+        }
+
+        function markWatched(key) {
+            if (!watched.includes(key)) {
+                watched.push(key);
+                localStorage.setItem('math_legends_v2', JSON.stringify(watched));
+                setTimeout(renderWorld, 500);
+            }
+        }
+
+        function resetAll() {
+            if(confirm("Reset all destiny?")) {
+                watched = [];
+                localStorage.removeItem('math_legends_v2');
+                renderWorld();
+            }
+        }
+
+        function toggleTheme() {
+            isNight = !isNight;
+            localStorage.setItem('theme_preference', isNight ? 'night' : 'day');
+            applyTheme();
+        }
+
+        function checkTime() {
+            const h = new Date().getHours();
+            const txt = document.getElementById('greeting');
+            const emoji = document.getElementById('time-emoji');
+            if (h < 12) { txt.innerText = "Good Morning"; emoji.innerText = "🌅"; }
+            else if (h < 18) { txt.innerText = "Good Afternoon"; emoji.innerText = "☀️"; }
+            else { txt.innerText = "Good Evening"; emoji.innerText = "🌙"; }
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const body = document.body;
+            if (isNight) { body.classList.add('is-night'); body.classList.remove('is-day'); }
+            else { body.classList.add('is-day'); body.classList.remove('is-night'); }
+        }
+
+        function renderSky() {
+            const container = document.getElementById('sky-container');
+            container.innerHTML = '';
+            for(let i=0; i<50; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                s.style.top = Math.random()*100+'%'; s.style.left = Math.random()*100+'%';
+                s.style.width = Math.random()*3+'px'; s.style.height = s.style.width;
+                s.style.setProperty('--duration', (2+Math.random()*3)+'s');
+                container.appendChild(s);
+            }
+            for(let i=0; i<4; i++) {
+                const c = document.createElement('div');
+                c.className = 'cloud';
+                c.style.top = (10+i*20)+'%'; c.style.width = (100+Math.random()*200)+'px';
+                c.style.height = '60px'; c.style.setProperty('--duration', (30+i*10)+'s');
+                container.appendChild(c);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
+
+<!-- ### 📝 Instructions to Add a New Lesson (අලුත් පාඩමක් එකතු කිරීමට උපදෙස්)
+
+1.  **Open the File:** Open your `index.html` file in a text editor (Notepad, VS Code).
+2.  **Locate Data Section:** Scroll down to the `<script>` tag at the bottom.
+3.  **Find `lessonData`:** Look for the line `const lessonData = [`.
+4.  **Add New Block:** Copy the code block below and paste it **at the very top** of the list (just after `[`).
+
+**Code to Copy (මෙන්න Copy කළ යුතු කොටස):**
+
+```javascript
+    {
+        id: "lesson_13", // 1. Change the ID number (අංකය 13 ලෙස වෙනස් කරන්න)
+        topic: "New Lesson Name Here", // 2. Add Sinhala Topic (මාතෘකාව සිංහලෙන් ලියන්න)
+        pdf: "[https://drive.google.com](https://drive.google.com)...", // 3. Add PDF Link (PDF ලින්ක් එක දමන්න)
+        videos: [
+            // 4. Add Videos (වීඩියෝ එකතු කරන්න)
+            { title: "Theory Part 1", type: "Revision", url: "[https://youtu.be/](https://youtu.be/)..." },
+            { title: "iPad Discussion", type: "iPad", url: "[https://youtu.be/](https://youtu.be/)..." }
+        ]
+    }, -->

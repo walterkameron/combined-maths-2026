@@ -166,6 +166,11 @@
         @keyframes blink-orange { 50% { opacity: 0.5; color: #fbbf24; } }
         @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); } 100% { transform: translate(-50%, -50%) scale(1); } }
         .blink-orange { animation: blink-orange 1.5s infinite; color: #fbbf24; }
+        
+        /* Shimmer Animation for Selection Buttons */
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
 
         .quest-scroll::-webkit-scrollbar { width: 6px; }
         .quest-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
@@ -186,11 +191,59 @@
         .footer-link { color: var(--footer-link); transition: color 1.5s; }
         .footer-link:hover { filter: brightness(1.2); }
 
+/* 👇 අලුතින් එකතු කරන Button Block Animations 👇 */
+        @keyframes bg-pan {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes block-shift {
+            0% { background-position: 0 0, 15px 15px; }
+            100% { background-position: 30px 30px, 45px 45px; }
+        }
+
+        .btn-block-yellow {
+            background: linear-gradient(-45deg, #f59e0b, #fde047, #eab308, #d97706);
+            background-size: 300% 300%;
+            animation: bg-pan 3s ease infinite;
+            position: relative;
+            overflow: hidden;
+            color: #451a03; /* පැහැදිලිව පෙනෙන තද දුඹුරු/කළු අකුරු */
+            border: none;
+        }
+        
+        .btn-block-purple {
+            background: linear-gradient(-45deg, #a855f7, #e879f9, #9333ea, #c084fc);
+            background-size: 300% 300%;
+            animation: bg-pan 3s ease infinite;
+            position: relative;
+            overflow: hidden;
+            color: #ffffff; /* සුදු අකුරු */
+            border: none;
+        }
+        
+        /* වීඩියෝවේ මෙන් කොටු (Blocks) චලනය වන රටාව */
+        .btn-block-yellow::before, .btn-block-purple::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: 
+              linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.2) 75%, rgba(255,255,255,0.2)), 
+              linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.2) 75%, rgba(255,255,255,0.2));
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            animation: block-shift 4s linear infinite;
+            z-index: 0;
+            mix-blend-mode: overlay;
+        }
+        /* 👆 ========================================= 👆 */
+
+
     </style>
 </head>
 <body class="is-night">
 
-	<div id="prime-gate" class="fixed inset-0 z-[9999] overflow-hidden font-sans text-white select-none bg-black">
+    <div id="prime-gate" class="fixed inset-0 z-[9999] overflow-hidden font-sans text-white select-none bg-black">
     
     <video id="bg-video" muted playsinline class="absolute inset-0 w-full h-full object-cover transition-transform duration-[5s] scale-100 opacity-90">
         <source src="https://d1ixvlox28cm5r.cloudfront.net/assets/global/hero-kv-en.mp4" type="video/mp4">
@@ -229,7 +282,49 @@
             <p class="text-[10px] text-white/30 tracking-[0.3em] font-light">PROTECTED BY PRIME TUTORS</p>
         </div>
     </div>
-</div>
+
+    <div id="selection-ui" class="absolute inset-0 z-30 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-1000 transform scale-95 hidden">
+        
+        <div class="relative p-8 md:p-10 rounded-[32px] border border-white/20 overflow-hidden flex flex-col items-center text-center max-w-sm w-[90%] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-black/40 backdrop-blur-2xl">
+            
+            <div class="absolute -top-20 -left-20 w-40 h-40 bg-purple-500/30 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-20 -right-20 w-40 h-40 bg-yellow-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="mb-6 flex justify-center relative z-10">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-[#d4af37] via-yellow-200 to-[#d4af37] flex items-center justify-center shadow-[0_0_30px_rgba(212,175,55,0.6)] animate-pulse">
+                    <span class="text-3xl drop-shadow-md">🏛️</span>
+                </div>
+            </div>
+
+            <h2 class="text-2xl font-[Cinzel] font-bold text-white mb-2 tracking-widest drop-shadow-lg relative z-10">SELECT PATH</h2>
+           <p class="text-white/80 text-[13px] mb-8 font-inter leading-relaxed relative z-10">
+    ඔබට අවශ්‍ය අංශය පහතින් තෝරන්න:<br>
+    සිද්ධාන්ත හා පුනරීක්ෂණ සඳහා <span class="text-[#facc15] font-bold">Class Lessons</span> ද,<br>
+    ප්‍රශ්න පත්‍ර සාකච්ඡා සඳහා <span class="text-[#c084fc] font-bold">Paper Class</span> ද තෝරන්න.
+</p>
+
+            <div class="space-y-4 w-full relative z-10"> 
+                
+                <button onclick="enterMode('class')" class="btn-block-yellow w-full py-4 rounded-2xl text-[13px] font-black tracking-[0.2em] uppercase shadow-[0_8px_30px_rgba(250,204,21,0.4)] hover:scale-[1.03] active:scale-[0.97] transition-transform duration-300"> 
+                    <span class="font-[Cinzel] relative z-10 flex items-center justify-center gap-3">
+                        <span class="text-xl drop-shadow-sm">📚</span> CLASS LESSONS
+                    </span> 
+                </button> 
+
+                <button onclick="enterMode('paper')" class="btn-block-purple w-full py-4 rounded-2xl text-[13px] font-black tracking-[0.2em] uppercase shadow-[0_8px_30px_rgba(168,85,247,0.4)] hover:scale-[1.03] active:scale-[0.97] transition-transform duration-300">
+                    <span class="font-[Cinzel] relative z-10 flex items-center justify-center gap-3">
+                        <span class="text-xl drop-shadow-md">🧾</span> PAPER CLASS
+                    </span>
+                </button>
+
+            </div>
+
+            <p class="mt-8 text-[11px] text-white/60 tracking-wider relative z-10">
+    ආපසු යාමට ඕනෑම වෙලාවක <span class="text-white font-bold tracking-widest bg-white/10 px-2 py-1 rounded-md mx-1">CHANGE MODE</span> button එක භාවිත කරන්න.
+</p>
+        </div>
+    </div>
+    </div>
 
 <style>
     /* Essential Animations */
@@ -262,29 +357,20 @@
 
     // 🎥 SMART VIDEO LOGIC (Reload based segments)
     function setupSmartVideo() {
-        // 1. Get current reload count from storage
         let reloadCount = parseInt(localStorage.getItem('page_reload_count') || '0');
-        
-        // 2. Increment count for next time
         localStorage.setItem('page_reload_count', reloadCount + 1);
 
-        // 3. Calculate Start Time
-        // Formula: (Count % 10) * 5 seconds
-        // Example: 0->0s, 1->5s, 2->10s ... 10->0s
         const segmentIndex = reloadCount % TOTAL_SEGMENTS;
-        const startTime = segmentIndex * (AUTO_LOAD_TIME / 1000); // 5000ms / 1000 = 5s
+        const startTime = segmentIndex * (AUTO_LOAD_TIME / 1000); 
 
-        // 4. Update Debug Text (Optional - Cool Tech Feel)
         segmentDebug.innerText = `SYS_SYNC: SEGMENT_0${segmentIndex} [T-${startTime}s]`;
 
-        // 5. Play Specific Part
         bgVideo.currentTime = startTime;
-        bgVideo.muted = true; // Required for auto-play
+        bgVideo.muted = true; 
         
         const playPromise = bgVideo.play();
         if (playPromise !== undefined) {
             playPromise.then(() => {
-                // Zoom Effect on Start
                 setTimeout(() => {
                     bgVideo.style.transform = "scale(1.1)";
                 }, 100);
@@ -296,13 +382,11 @@
 
     // ⏳ LOADING TEXT SEQUENCE
     function runLoadingSequence() {
-        // 1. Start Progress Bar Animation
         setTimeout(() => {
             progressFill.style.transition = `width ${AUTO_LOAD_TIME}ms cubic-bezier(0.4, 0, 0.2, 1)`;
             progressFill.style.width = "100%";
         }, 100);
 
-        // 2. Define Text Steps (Technical/Contextual)
         const steps = [
             { t: "Connecting to Secure Server...", time: 500 },
             { t: "Verifying Telegram Handshake...", time: 1500 },
@@ -310,13 +394,11 @@
             { t: "Access Granted.", time: 4500 }
         ];
 
-        // 3. Execute Text Changes
         steps.forEach(step => {
             setTimeout(() => {
                 statusText.innerText = step.t;
                 statusText.classList.add('animate-pulse');
                 
-                // Change Title at the last step
                 if(step.t === "Access Granted.") {
                     mainTitle.innerText = "WELCOME STUDENT";
                     mainTitle.classList.add('text-[#d4af37]');
@@ -326,17 +408,82 @@
             }, step.time);
         });
 
-        // 4. REMOVE GATE (After 5 Seconds)
+        // 4. SELECTION SCREEN එක පෙන්වීම
         setTimeout(() => {
-            unlockGate();
+            showSelectionScreen();
         }, AUTO_LOAD_TIME);
     }
 
-    // 🚪 GATE REMOVAL ANIMATION
+    // 👇 අලුතින් එකතු කළ Functions (Selection Logic) 👇
+    function showSelectionScreen() {
+        const loadUI = document.getElementById('auto-load-ui');
+        const selectUI = document.getElementById('selection-ui');
+        
+        loadUI.style.transition = "opacity 0.8s ease";
+        loadUI.style.opacity = "0";
+        
+        setTimeout(() => { 
+            loadUI.style.display = 'none'; 
+            selectUI.classList.remove('hidden');
+            setTimeout(() => {
+                selectUI.style.opacity = "1";
+                selectUI.classList.remove('scale-95');
+                selectUI.classList.add('scale-100');
+                selectUI.style.pointerEvents = "auto";
+            }, 50);
+        }, 800);
+    }
+
+    function enterMode(mode) {
+        const selectUI = document.getElementById('selection-ui');
+        selectUI.style.transform = "scale(0.95)";
+        selectUI.style.opacity = "0";
+        selectUI.style.pointerEvents = "none";
+        
+        setTimeout(() => {
+            if(mode === 'class') {
+                unlockGate(); 
+            } else if (mode === 'paper') {
+                // ඔබ ලබා දුන් PAPER CLASS ලින්ක් එක
+                window.location.href = "https://walterkameron.github.io/paper-class-2026/"; 
+            }
+        }, 600);
+    }
+
+    function backToSelection() {
+        const gate = document.getElementById('prime-gate');
+        const selectUI = document.getElementById('selection-ui');
+        const bgVideo = document.getElementById('bg-video');
+        
+        // Gate එක සහ වීඩියෝව නැවත මතු කිරීම
+        gate.style.display = 'block';
+        gate.style.opacity = "0";
+        gate.style.transform = "scale(1.05)";
+        
+        let playPromise = bgVideo.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => console.log("Autoplay prevented during backToSelection"));
+        }
+
+        setTimeout(() => {
+            gate.style.transition = "opacity 0.8s ease, transform 0.8s ease";
+            gate.style.opacity = "1";
+            gate.style.transform = "scale(1)";
+            
+            selectUI.classList.remove('hidden');
+            setTimeout(() => {
+                selectUI.style.opacity = "1";
+                selectUI.style.transform = "scale(1)";
+                selectUI.style.pointerEvents = "auto";
+            }, 100);
+        }, 10);
+    }
+
+    // 🚪 GATE REMOVAL ANIMATION (Class එක තේරූ විට)
     function unlockGate() {
         gate.style.transition = "opacity 1s ease, transform 1s ease";
         gate.style.opacity = "0";
-        gate.style.transform = "scale(1.05)"; // Slight zoom out effect
+        gate.style.transform = "scale(1.05)"; 
         
         setTimeout(() => {
             gate.style.display = 'none';
@@ -349,7 +496,7 @@
 
     <div class="relative z-10 max-w-6xl mx-auto p-4 md:p-8">
 
-        <header class="text-center mb-12">
+       <header class="text-center mb-12">
             <h2 class="text-xl md:text-3xl font-bold tracking-widest uppercase opacity-80 ancient-font mb-2">
                 <span id="greeting">Welcome</span> <span id="time-emoji">✨</span>
             </h2>
@@ -358,6 +505,12 @@
             </h1>
             <p class="text-sm mt-2 opacity-70">Batch 2026 | Teacher: Vikum Harshana</p>
         </header>
+
+        <div class="w-full flex justify-center md:justify-end mb-6 md:-mt-14 relative z-20 px-4 md:px-0">
+            <button onclick="backToSelection()" class="border border-[#d4af37]/60 text-[#f3e5ab] bg-black/50 backdrop-blur-md px-5 py-2.5 rounded-full hover:bg-[#d4af37]/20 transition-all font-bold uppercase text-[11px] tracking-[0.15em] shadow-[0_0_15px_rgba(212,175,55,0.15)] cursor-pointer">
+                Change mode • Path
+            </button>
+        </div>
 
         <div class="ancient-board mb-16">
             <div class="firefly" style="top:10%; left:10%; --x:20px; --y:-20px;"></div>
@@ -376,17 +529,17 @@
                         The archives below hold the key to your victory.❞
                     </p>
 
-					<div class="mt-2 mb-6 inline-flex items-center gap-3 bg-black/40 border border-[#d4af37]/50 rounded-lg p-3 pr-5 backdrop-blur-sm shadow-[0_0_15px_rgba(212,175,55,0.1)]">
+                    <div class="mt-2 mb-6 inline-flex items-center gap-3 bg-black/40 border border-[#d4af37]/50 rounded-lg p-3 pr-5 backdrop-blur-sm shadow-[0_0_15px_rgba(212,175,55,0.1)]">
     
-    					<span class="bg-[#d4af37] text-black text-[10px] font-bold px-2 py-1 rounded shadow-lg animate-pulse uppercase tracking-wider">
-       					 New
-   						 </span>
+                    <span class="bg-[#d4af37] text-black text-[10px] font-bold px-2 py-1 rounded shadow-lg animate-pulse uppercase tracking-wider">
+                     New
+                     </span>
 
-    				<span class="text-sm text-[#f3e5ab] font-bold tracking-wide font-inter">
+                <span class="text-sm text-[#f3e5ab] font-bold tracking-wide font-inter">
 Added: වර්ගජ සමීකරණ <span class="text-xs opacity-80 truncate font-mono tracking-wide ml-2">Revision</span>
-    					</span>
-   					 </div>
-					
+                    </span>
+                     </div>
+                    
                     <div class="flex gap-4 mt-6">
                         <button onclick="toggleTheme()" class="border border-yellow-500 text-yellow-400 px-4 py-2 rounded-lg hover:bg-yellow-500/20 transition font-bold uppercase text-xs tracking-widest">
                             🌗 Toggle Realm
@@ -421,30 +574,15 @@ Added: වර්ගජ සමීකරණ <span class="text-xs opacity-80 trunca
         // =========================================================================
         // 🛠️ INSTRUCTIONS FOR ADDING NEW LESSONS (අලුත් පාඩම් එකතු කරන ආකාරය)
         // =========================================================================
-        // 1. පහත 'lessonData' ලැයිස්තුව සොයාගන්න (Find the 'lessonData' list below).
-        // 2. එහි ඉහළින්ම අලුත් කොටසක් '{ ... }' පහත ආකෘතියට අනුව එකතු කරන්න (Add new block at the TOP).
-        // 
-        // ආකෘතිය (Format):
-        // {
-        //    id: "lesson_13",  <-- 1. අලුත් අංකයක් දෙන්න (Give unique ID)
-        //    topic: "New Lesson Name", <-- 2. පාඩමේ නම සිංහලෙන් (Lesson Name in Sinhala)
-        //    pdf: "Link", <-- 3. PDF ලින්ක් එක (නැත්නම් "" තබන්න)
-        //    videos: [
-        //       { title: "Revision Theory", type: "Revision", url: "Youtube Link" },
-        //       { title: "Tutorial", type: "iPad", url: "Youtube Link" }
-        //    ]
-        // },
-        // =========================================================================
-
+        
         const lessonData = [
-            /* 👇 PASTE NEW LESSON HERE (අලුත් පාඩම මෙතැනට) 👇 */
              {
                 id: "lesson_13", topic: "වර්ගජ සමීකරණ",
                 pdf: "https://drive.google.com/drive/folders/1Djale6pKWS5B2gyGdlG3Zt2lsNpM3rRa?usp=sharing",
                 videos: [ { title: "Full Lesson", type: "Revision", url: "https://youtu.be/w9kRYNPvbzI" } ]
             },
-		
-			{
+        
+            {
                 id: "lesson_12", 
                 topic: "අවකලනය", 
                 pdf: "https://drive.google.com/drive/folders/1RiEg3VYivUs9ICdKsHWiZTCEIbgJoFE_?usp=drive_link",
@@ -456,8 +594,6 @@ Added: වර්ගජ සමීකරණ <span class="text-xs opacity-80 trunca
                     { title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/ZEq_wxAeCDI" } 
                 ]
             },
-            /* ------------------------------------------------ */
-	  
             {
                 id: "lesson_03", topic: "බල ඝුර්ණය",
                 pdf: "https://drive.google.com/drive/folders/1FGFSHSK6vj01ApfaLgqF5GhXTUZMavaO?usp=drive_link",
@@ -477,33 +613,32 @@ Added: වර්ගජ සමීකරණ <span class="text-xs opacity-80 trunca
                 id: "lesson_15", topic: "ගණිත අභ්‍යුහන මූලධර්මය",
                 pdf: "https://drive.google.com/drive/folders/1C9EHyKIpqUOZiAzrO_0vNLOfhCAZUQpU?usp=drive_link",
                 videos: [ 
-			{ title: "Full Lesson", type: "Revision", url: "https://youtu.be/rAkv-qqIE2s" } ,
-		 	{ title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/PMzxlVE264M" }
-			]	
+            { title: "Full Lesson", type: "Revision", url: "https://youtu.be/rAkv-qqIE2s" } ,
+            { title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/PMzxlVE264M" }
+            ]   
             }, 
             {
                 id: "lesson_14", topic: "ප්‍රක්ෂිප්ත",
                 pdf: "https://drive.google.com/drive/folders/1wmqjX83b4k7QiWs3-Z5ETDfPwX5_jf-L?usp=drive_link",
                 videos: [ 
-			{ title: "Full Lesson", type: "Revision", url: "https://youtu.be/qDkrrFwwzB0" }  /* ,
-		 	{ title: "Tutorial Discussion", type: "iPad", url: "https://www.blank.org" } */
-			]	
+            { title: "Full Lesson", type: "Revision", url: "https://youtu.be/qDkrrFwwzB0" }  
+            ]   
             },
-	        {
+            {
                 id: "lesson_13", topic: "චලිත ප්‍රස්තාර",
                 pdf: "https://drive.google.com/drive/folders/1eLyxwu_z5us3OwKtOOMUpt6npqE3gCu-?usp=sharing",
                 videos: [ 
-			{ title: "Full Lesson", type: "Revision", url: "https://youtu.be/twwRF1WO30Y" },
-		 	{ title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/mmlgaJPl7RM" }
-			]	
+            { title: "Full Lesson", type: "Revision", url: "https://youtu.be/twwRF1WO30Y" },
+            { title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/mmlgaJPl7RM" }
+            ]   
             }, 
             {
                 id: "lesson_01", topic: "ගෝල ගැටුම්",
                 pdf: "https://drive.google.com/drive/folders/1mhWZPPLYHMHJqJvjtpaKSirj3oupcYEm?usp=drive_link",
                 videos: [ 
-			{ title: "Full Lesson", type: "Revision", url: "https://youtu.be/u3FscvA7NiI" },
-		 	{ title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/SVEFqAXORA4" }
-			]	
+            { title: "Full Lesson", type: "Revision", url: "https://youtu.be/u3FscvA7NiI" },
+            { title: "Tutorial Discussion", type: "iPad", url: "https://youtu.be/SVEFqAXORA4" }
+            ]   
             },
             {
                 id: "lesson_11", topic: "මාපාංක අසමානතා",
@@ -552,7 +687,6 @@ Added: වර්ගජ සමීකරණ <span class="text-xs opacity-80 trunca
             });
         }
 
-        // --- CLICK & GLOW LOGIC ---
         function highlightCard(id) {
             const card = document.getElementById(id);
             if(card) {
@@ -736,24 +870,3 @@ Added: වර්ගජ සමීකරණ <span class="text-xs opacity-80 trunca
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
